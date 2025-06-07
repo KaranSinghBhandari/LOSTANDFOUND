@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Users</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-6">
+  <a href="/admin/dashboard" class="text-blue-500 hover:underline">← Back to Dashboard</a>
+  <h2 class="text-2xl font-bold mb-6 mt-4">Manage Users</h2>
+
+  <table class="min-w-full bg-white dark:bg-gray-800 rounded shadow overflow-hidden">
+    <thead class="bg-gray-200 dark:bg-gray-700">
+      <tr>
+        <th class="px-6 py-3 text-left text-sm font-semibold">ID</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">Name</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">Email</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">Status</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(user => { %>
+        <tr class="border-t dark:border-gray-600">
+          <td class="px-6 py-4"><%= user.id %></td>
+          <td class="px-6 py-4"><%= user.name %></td>
+          <td class="px-6 py-4"><%= user.email %></td>
+          <td class="px-6 py-4">
+            <% if (user.is_banned) { %>
+              <span class="text-red-500 font-semibold">Banned</span>
+            <% } else { %>
+              <span class="text-green-500 font-semibold">Active</span>
+            <% } %>
+          </td>
+          <td class="px-6 py-4">
+            <% if (!user.is_banned) { %>
+              <form action="/admin/ban-user/<%= user.id %>" method="POST" onsubmit="return confirm('Are you sure you want to ban this user?');">
+                <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded">Ban</button>
+              </form>
+            <% } else { %>
+              <form action="/admin/unban-user/<%= user.id %>" method="POST" onsubmit="return confirm('Unban this user?');">
+                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded">Unban</button>
+              </form>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <script>
+    const savedMode = localStorage.getItem('mode');
+    if (savedMode === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+</body>
+</html>

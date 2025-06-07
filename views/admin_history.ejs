@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claim/Unclaim History</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+  <div class="px-6 pt-6 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+  <div>
+    <h1 class="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-1 sm:mb-0">Lost & Found Item Activity History</h1>
+    <br>
+    <a href="/admin/dashboard" class="text-sm text-blue-500 dark:text-blue-300 hover:underline">← Back to Dashboard</a>
+  </div>
+
+  <!-- Dropdown Filter -->
+  <div class="flex items-center">
+    <label for="filter" class="mr-2 text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">Filter by Action:</label>
+    <select id="filter" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded px-3 py-2">
+      <option value="All">All</option>
+      <option value="Claimed">Claimed</option>
+      <option value="Unclaimed">Unclaimed</option>
+      <option value="Marked as Found">Marked as Found</option>
+    </select>
+  </div>
+</div>
+
+
+  <!-- History Table -->
+  <main class="p-6 overflow-x-auto">
+    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-4">
+      <h2 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Item Claim/Unclaim History</h2>
+      <table class="min-w-full table-auto">
+        <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-left">
+          <tr>
+            <th class="px-4 py-2">ID</th>
+            <th class="px-4 py-2">Item Name</th>
+            <th class="px-4 py-2">Action</th>
+            <th class="px-4 py-2">User</th>
+            <th class="px-4 py-2">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (history.length === 0) { %>
+            <tr>
+              <td colspan="5" class="text-center text-gray-500 dark:text-gray-400 py-4">No history records found.</td>
+            </tr>
+          <% } else { %>
+            <% history.forEach(record => { %>
+            <tr class="history-row border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700" data-action="<%= record.action %>">
+              <td class="px-4 py-2"><%= record.id %></td>
+              <td class="px-4 py-2"><%= record.itemName %></td>
+              <td class="px-4 py-2">
+                <span class="
+                  <%= record.action === 'Claimed' ? 'text-green-600 dark:text-green-400' :
+                  record.action === 'Unclaimed' ? 'text-red-600 dark:text-red-400' :
+                  record.action === 'Marked as Found' ? 'text-yellow-600 dark:text-yellow-400' :
+                  'text-gray-600 dark:text-gray-300' %> font-semibold">
+                  <%= record.action %>
+                </span>
+              </td>
+              <td class="px-4 py-2"><%= record.user %></td>
+              <td class="px-4 py-2"><%= new Date(record.date).toLocaleDateString() %></td>
+            </tr>
+          <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    // Apply saved mode on page load
+    const savedMode = localStorage.getItem('mode');
+    if (savedMode === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    // Filtering logic
+  const filterDropdown = document.getElementById('filter');
+  const rows = document.querySelectorAll('.history-row');
+
+  filterDropdown.addEventListener('change', () => {
+    const selected = filterDropdown.value;
+    rows.forEach(row => {
+      const action = row.getAttribute('data-action');
+      row.style.display = (selected === 'All' || action === selected) ? '' : 'none';
+    });
+  });
+  </script>
+
+</body>
+</html>

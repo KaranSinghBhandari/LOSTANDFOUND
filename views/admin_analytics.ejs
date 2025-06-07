@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Analytics</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Enable Tailwind dark mode with 'class' strategy
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-6">
+  <a href="/admin/dashboard" class="inline-block mt-6 text-purple-500 dark:text-purple-300 hover:underline">← Back to Dashboard</a>
+  <br> <br>
+
+  <h1 class="text-3xl font-bold mb-6">Admin Analytics Dashboard</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white dark:bg-gray-800 rounded shadow p-6">
+      <h2 class="text-xl font-semibold mb-2">Total Lost Items</h2>
+      <p class="text-3xl font-bold text-purple-600"><%= stats.totalLost %></p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded shadow p-6">
+      <h2 class="text-xl font-semibold mb-2">Total Found Items</h2>
+      <p class="text-3xl font-bold text-green-600"><%= stats.totalFound %></p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded shadow p-6">
+      <h2 class="text-xl font-semibold mb-2">Total Claimed Items</h2>
+      <p class="text-3xl font-bold text-blue-600"><%= stats.totalClaimed %></p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded shadow p-6">
+      <h2 class="text-xl font-semibold mb-2">Total Unclaimed Items</h2>
+      <p class="text-3xl font-bold text-red-600"><%= stats.totalUnclaimed %></p>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded shadow p-6">
+      <h2 class="text-xl font-semibold mb-2">Total Returned Items</h2>
+      <p class="text-3xl font-bold text-red-600"><%= stats.totalReturned %></p>
+    </div>
+  </div>
+  <script>
+    // Apply saved mode on page load
+    const savedMode = localStorage.getItem('mode');
+    if (savedMode === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+</body>
+</html>

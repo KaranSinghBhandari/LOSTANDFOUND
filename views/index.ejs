@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Lost & Found Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          boxShadow: {
+            '3xl': '0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.04)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .switch-tab {
+      padding: 0.5rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fadeInUp {
+      animation: fadeInUp 0.5s ease forwards;
+    }
+
+    #toast {
+      transition: opacity 0.5s ease-out;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #toast.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300">
+  <!-- Toast container -->
+  <div id="toast" class="fixed top-5 right-5 bg-green-500 text-white px-4 py-2 rounded shadow-lg opacity-0 pointer-events-none">
+    <span id="toast-message"></span>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="bg-white dark:bg-gray-800 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-blue-600 dark:text-blue-400">Lost & Found Portal</h1>
+      <div class="flex flex-wrap items-center gap-3">
+        <a href="report_lost.html" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 transition">Lost</a>
+        <a href="report_found.html" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 transition">Found</a>
+        <a href="#about" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 transition">About</a>
+
+        <% if (!user) { %>
+          <a href="admin_login.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Admin Login</a>
+          <a href="login.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Student Login</a>
+        <% } else { %>
+          <form action="/auth/logout" method="POST">
+            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Logout</button>
+          </form>
+        <% } %>
+
+        <button onclick="toggleDarkMode()" id="modeToggle" class="ml-2 px-3 py-2 text-sm rounded bg-gray-200 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+          🌙
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="text-center py-20 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-gray-800 dark:to-gray-700">
+    <div class="px-4">
+      <h2 class="text-4xl font-bold mb-4">Lost something on campus?</h2>
+      <p class="text-lg text-gray-700 dark:text-gray-200 mb-6">Report it or check if someone found it!</p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="report_lost.html" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600">Report Lost Item</a>
+        <a href="report_found.html" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600">Report Found Item</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Welcome Section -->
+  <section class="container mx-auto px-4 py-10 text-center">
+    <h3 class="text-2xl font-semibold mb-4">Welcome, <%= user %>!</h3>
+    <p class="text-lg text-gray-600 dark:text-gray-300">We're glad you're here. Feel free to report any lost or found items.</p>
+  </section>
+
+  <!-- Toggle Buttons -->
+  <div class="flex justify-center">
+    <div class="inline-flex rounded-lg overflow-hidden border border-blue-600 shadow-sm" role="group">
+      <button onclick="showSection('lost')" id="lostBtn" class="switch-tab bg-blue-600 text-white">
+        Lost Items
+      </button>
+      <button onclick="showSection('found')" id="foundBtn" class="switch-tab bg-white text-blue-600 dark:bg-gray-700 dark:text-blue-300">
+        Found Items
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <section class="text-center mt-10 px-4">
+  <div class="mb-6">
+    <input 
+      type="text" 
+      id="searchInput" 
+      oninput="filterItems()" 
+      placeholder="Search by item name or location..." 
+      class="px-4 py-2 w-full md:w-1/2 rounded border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white dark:border-gray-600"
+    />
+  </div>
+  </section>
+
+  <!-- Lost Items Section -->
+  <section id="lostSection" class="transition-opacity duration-300 max-w-7xl mx-auto px-4 py-12">
+    <h3 class="text-3xl font-bold text-center mb-8 text-blue-600 dark:text-blue-400">Recently Reported Lost Items</h3>
+    <% if (!lostItems || lostItems.length === 0) { %>
+      <p class="text-center text-gray-500">No lost items have been reported yet.</p>
+    <% } else { %>
+      <div id="lostGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <% lostItems.forEach(item => { %>
+          <div class="item-card bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md transform transition-transform duration-500 hover:scale-105 hover:shadow-3xl animate-fadeInUp" data-name="<%= item.item_name.toLowerCase() %>" data-location="<%= item.location_lost.toLowerCase() %>" >
+            <img src="/uploads/<%= item.image %>" alt="Item Image" class="rounded-lg mb-4 h-48 w-full object-cover">
+            <h4 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1"><%= item.item_name %></h4>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Lost at <%= item.location_lost %> on <%= item.date_lost %></p>
+            <p class="text-sm text-gray-500 mb-2">
+              Status:
+              <span class="font-medium <%= item.status === 'Received' ? 'text-green-600' : 'text-yellow-600' %>"><%= item.status %></span>
+            </p>
+            <% if (item.status === 'Received') { %>
+              <p class="text-sm text-green-600 font-medium mt-2">This item has been received by the owner.</p>
+            <% } else if (user) { %>
+              <form action="/lost/mark-returned/<%= item.id %>" method="POST" onsubmit="return confirm('Are you sure you want to mark this item as found?');">
+                <button type="submit" class="w-full py-2 mt-2 text-sm font-medium text-white rounded-md bg-blue-600 hover:bg-blue-700 transition">Mark as Found</button>
+              </form>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+
+  <!-- Found Items Section -->
+  <section id="foundSection" class="hidden transition-opacity duration-300 max-w-7xl mx-auto px-4 py-12">
+    <h3 class="text-3xl font-bold text-center mb-8 text-blue-600 dark:text-blue-400">Recently Reported Found Items</h3>
+    <% if (!foundItems || foundItems.length === 0) { %>
+      <p class="text-center text-gray-500">No found items have been reported yet.</p>
+    <% } else { %>
+      <div id="foundGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <% foundItems.forEach(item => { %>
+          <div class="item-card bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md transform transition-transform duration-500 hover:scale-105 hover:shadow-3xl animate-fadeInUp" data-name="<%= item.item_name.toLowerCase() %>" data-location="<%= item.location_found.toLowerCase() %>">
+            <img src="/uploads/<%= item.image %>" alt="Item Image" class="rounded-lg mb-4 h-48 w-full object-cover">
+            <h4 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1"><%= item.item_name %></h4>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Found at <%= item.location_found %> on <%= item.date_found %></p>
+            <p class="text-sm text-gray-500 mb-2">
+              Status:
+              <span class="font-medium <%= item.status === 'Returned' ? 'text-red-600' : item.status === 'Received' ? 'text-green-600' : 'text-yellow-600' %>"><%= item.status %></span>
+            </p>
+            <% if (user && item.status !== 'Returned') {
+              const isClaimed = claimedItems.found && claimedItems.found.includes(item.id);
+              const confirmationMessage = isClaimed ? "Are you sure you want to unclaim this item?" : "Are you sure you want to claim this item?";
+            %>
+              <form action="/claim/<%= isClaimed ? 'unclaim/found' : 'found' %>/<%= item.id %>" method="POST" onsubmit='return confirm("<%= confirmationMessage %>");'>
+                <button type="submit" class="w-full py-2 mt-2 text-sm font-medium text-white rounded-md <%= isClaimed ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700' %> transition">
+                  <%= isClaimed ? 'Unclaim' : 'Claim' %>
+                </button>
+              </form>
+            <% } else if (item.status === 'Returned') { %>
+              <p class="mt-2 text-center text-red-500 font-medium text-sm">This item has been returned and cannot be claimed.</p>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </section>
+
+  <!-- About Section -->
+  <section class="bg-white dark:bg-gray-800 py-12" id="about">
+    <div class="container mx-auto px-4 text-center">
+      <h3 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">About This Portal</h3>
+      <p class="max-w-2xl mx-auto text-gray-600 dark:text-gray-300">
+        The Campus Lost and Found Portal helps students and staff report and track missing belongings. 
+        Whether you lost something or found someone else’s item, this platform connects the right people faster and easier.
+      </p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-200 dark:bg-gray-900 text-center py-4 mt-10">
+    <p class="text-sm text-gray-600 dark:text-gray-400">© 2025 Lost & Found Portal. All rights reserved.</p>
+  </footer>
+
+  <!-- Item Detail Modal -->
+<div id="itemModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-lg w-full relative shadow-2xl">
+    <button onclick="closeModal()" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-xl">&times;</button>
+    <img id="modalImage" src="" alt="Item Image" class="w-full h-60 object-cover rounded mb-4">
+    <h2 id="modalName" class="text-2xl font-semibold mb-2 text-blue-700 dark:text-blue-400"></h2>
+    <p id="modalDateLocation" class="text-gray-700 dark:text-gray-300 mb-2"></p>
+    <p id="modalStatus" class="mb-3 font-medium"></p>
+    <div id="modalButtons" class="mt-4"></div>
+  </div>
+</div>
+
+  <!-- Scripts -->
+  <script>
+    // Toggle Lost / Found Sections
+    function showSection(type) {
+      const lostSection = document.getElementById("lostSection");
+      const foundSection = document.getElementById("foundSection");
+      const lostBtn = document.getElementById("lostBtn");
+      const foundBtn = document.getElementById("foundBtn");
+
+      if (type === 'lost') {
+        lostSection.classList.remove("hidden");
+        foundSection.classList.add("hidden");
+        lostBtn.classList.add("bg-blue-600", "text-white");
+        lostBtn.classList.remove("bg-white", "text-blue-600", "dark:bg-gray-700", "dark:text-blue-300");
+        foundBtn.classList.add("bg-white", "text-blue-600", "dark:bg-gray-700", "dark:text-blue-300");
+        foundBtn.classList.remove("bg-blue-600", "text-white");
+      } else {
+        foundSection.classList.remove("hidden");
+        lostSection.classList.add("hidden");
+        foundBtn.classList.add("bg-blue-600", "text-white");
+        foundBtn.classList.remove("bg-white", "text-blue-600", "dark:bg-gray-700", "dark:text-blue-300");
+        lostBtn.classList.add("bg-white", "text-blue-600", "dark:bg-gray-700", "dark:text-blue-300");
+        lostBtn.classList.remove("bg-blue-600", "text-white");
+      }
+
+      filterItems();
+    }
+    // Dark mode toggle with localStorage
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      const isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      document.getElementById('modeToggle').textContent = isDark ? '🔆' : '🌙';
+    }
+
+    (function () {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.getElementById('modeToggle').textContent = '🔆';
+      }
+    })();
+
+    // Filter items based on search input
+    function filterItems() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const visibleSection = document.getElementById('lostSection').classList.contains('hidden') ? 'foundGrid' : 'lostGrid';
+      const cards = document.getElementById(visibleSection)?.getElementsByClassName('item-card') || [];
+
+      for (const card of cards) {
+        const name = card.dataset.name || '';
+        const location = card.dataset.location || '';
+        card.style.display = (name.includes(query) || location.includes(query)) ? '' : 'none';
+      }
+    }
+
+    // Image click to show modal
+    document.querySelectorAll('.item-card img').forEach(img => {
+      img.addEventListener('click', () => {
+        const card = img.closest('.item-card');
+        const name = card.querySelector('h4').textContent;
+        const dateLoc = card.querySelectorAll('p')[0].textContent;
+        const statusText = card.querySelectorAll('p')[1]?.textContent || '';
+
+        document.getElementById('modalImage').src = img.src;
+        document.getElementById('modalName').textContent = name;
+        document.getElementById('modalDateLocation').textContent = dateLoc;
+        document.getElementById('modalStatus').textContent = statusText;
+        document.getElementById('itemModal').classList.remove('hidden');
+      });
+    });
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('itemModal').classList.add('hidden');
+    }
+
+    // Show "no items found" message
+    function filterItems() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const isLostVisible = !document.getElementById('lostSection').classList.contains('hidden');
+      const grid = document.getElementById(isLostVisible ? 'lostGrid' : 'foundGrid');
+      const cards = grid?.getElementsByClassName('item-card') || [];
+
+      let matchCount = 0;
+      for (const card of cards) {
+        const name = card.dataset.name || '';
+        const location = card.dataset.location || '';
+        const match = name.includes(query) || location.includes(query);
+        card.style.display = match ? '' : 'none';
+        if (match) matchCount++;
+      }
+
+      // Handle "No items found"
+      let noMsg = document.getElementById('noResultsMsg');
+      if (!noMsg) {
+        noMsg = document.createElement('p');
+        noMsg.id = 'noResultsMsg';
+        noMsg.className = 'text-center text-gray-500 mt-4';
+        grid.parentElement.appendChild(noMsg);
+      }
+      noMsg.textContent = matchCount === 0 ? 'No items match your search.' : '';
+    }
+
+    // Helper to get URL param
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    // Show toast if msg param exists
+    window.addEventListener('DOMContentLoaded', () => {
+      const msg = getQueryParam('msg');
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+
+      if (msg === 'claimed') {
+        toastMessage.textContent = 'Item claimed successfully!';
+      } else if (msg === 'unclaimed') {
+        toastMessage.textContent = 'Item unclaimed successfully!';
+      } 
+      else if(msg==='markedReturned'){
+        toastMessage.textContent = 'Item marked as found successfully!';
+      }else {
+        return; // no toast to show
+      }
+
+      // Show the toast by adding "show" class
+      toast.classList.add('show');
+
+      // After 3 seconds, start hiding the toast
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 5000);
+    });
+  </script>
+</body>
+</html>

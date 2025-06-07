@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Enable Tailwind's dark mode class strategy
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 font-sans text-gray-900 dark:text-gray-100">
+
+  <!-- Navbar -->
+  <nav class="bg-white dark:bg-gray-800 shadow px-6 py-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400">Admin Dashboard</h1>
+    <div class="flex items-center">
+      <span class="text-gray-700 dark:text-gray-300 mr-4">Welcome, Admin</span>
+      
+      <!-- Mode Toggle Button -->
+      <button id="modeToggle" class="ml-4 px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600">
+        🌙
+      </button>
+      
+      <a href="/admin/logout" class="ml-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Logout</a>
+    </div>
+  </nav>
+
+  <!-- Dashboard Content -->
+  <section class="p-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      
+      <!-- Card: View Lost Items -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Manage Lost Items</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Review and verify lost item reports submitted by users.</p>
+        <a href="/admin/lost-items" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">View Lost Items</a>
+      </div>
+
+      <!-- Card: View Found Items -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Manage Found Items</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Review and verify found item reports submitted by users.</p>
+        <a href="/admin/found-items" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">View Found Items</a>
+      </div>
+
+      <!-- Card: Analytics Dashboard -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Admin Analytics</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">View item statistics and insights.</p>
+        <a href="/admin/analytics" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded">View Analytics</a>
+      </div>
+
+      <!-- Card: Claim/Unclaim History -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Item Action History</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">View history of claimed or unclaimed items by users including ID, item name, claimed/unclaimed by, and date.</p>
+        <a href="/admin/history" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">View History</a>
+      </div>
+
+      <!-- Card: Manage Users (Delete Users) -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Manage Users</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">View registered users and delete unwanted accounts.</p>
+        <a href="/admin/manage-users" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Manage Users</a>
+      </div>
+
+      <!-- Card: Add New Admin -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h2 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Register New Admin</h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Create and manage other admin accounts securely.</p>
+        <a href="/admin/register" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Add Admin</a>
+      </div>
+
+    </div>
+  </section>
+
+  <script>
+    const modeToggle = document.getElementById('modeToggle');
+
+    // Initialize mode on page load
+    const savedMode = localStorage.getItem('mode');
+    if (savedMode === 'dark') {
+      document.documentElement.classList.add('dark');
+      modeToggle.textContent = '🔆';
+    } else {
+      document.documentElement.classList.remove('dark');
+      modeToggle.textContent = '🌙';
+    }
+
+    // Toggle mode on button click
+    modeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      if (isDark) {
+        localStorage.setItem('mode', 'dark');
+        modeToggle.textContent = '🔆';
+      } else {
+        localStorage.setItem('mode', 'light');
+        modeToggle.textContent = '🌙';
+      }
+    });
+  </script>
+
+</body>
+</html>

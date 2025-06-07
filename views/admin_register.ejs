@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8" />
+  <title>Register New Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Enable Tailwind dark mode with class strategy
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 p-6 font-sans text-gray-900 dark:text-gray-100">
+<a href="/admin/dashboard" class="mb-4 inline-block text-blue-500 dark:text-blue-300 hover:underline">← Back to Dashboard</a>
+  <div class="max-w-md mx-auto bg-white dark:bg-gray-800 p-6 rounded shadow">
+    <h2 class="text-xl font-bold mb-4 text-center text-blue-600 dark:text-blue-400">Register New Admin</h2>
+    <form action="/admin/register" method="POST" class="space-y-4">
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300">Name</label>
+        <input type="text" name="name" required
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+      </div>
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300">Email</label>
+        <input type="email" name="email" required
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+      </div>
+      <div>
+        <label class="block text-gray-700 dark:text-gray-300">Password</label>
+        <input type="password" name="password" required
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+      </div>
+      <button type="submit"
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded w-full transition">Register</button>
+    </form>
+  </div>
+
+  <script>
+    // Apply saved mode on page load
+    const savedMode = localStorage.getItem('mode');
+    if (savedMode === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+
+</body>
+</html>

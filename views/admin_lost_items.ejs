@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manage Lost Items</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 p-6 text-gray-900 dark:text-gray-100">
+
+  <h1 class="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6">Manage Lost Items</h1>
+
+  <a href="/admin/dashboard" class="mb-4 inline-block text-blue-500 dark:text-blue-300 hover:underline">← Back to Dashboard</a>
+
+  <div class="overflow-x-auto">
+    <table class="table-auto w-full bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+      <thead class="bg-gray-200 dark:bg-gray-700 text-sm">
+        <tr>
+          <th class="py-3 px-4 text-left">ID</th>
+          <th class="py-3 px-4 text-left">Item Name</th>
+          <th class="py-3 px-4 text-left">Description</th>
+          <th class="py-3 px-4 text-left">Location</th>
+          <th class="py-3 px-4 text-left">Date Lost</th>
+          <th class="py-3 px-4 text-left">Status</th>
+          <th class="py-3 px-4 text-left">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="text-sm">
+        <% if (lostItems.length === 0) { %>
+          <tr>
+            <td colspan="7" class="text-center py-4 text-gray-500 dark:text-gray-400">No lost items reported yet.</td>
+          </tr>
+        <% } else { %>
+          <% lostItems.forEach(item => { %>
+            <tr class="border-t border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+              <td class="py-3 px-4"><%= item.id %></td>
+              <td class="py-3 px-4"><%= item.item_name %></td>
+              <td class="py-3 px-4"><%= item.description %></td>
+              <td class="py-3 px-4"><%= item.location_lost %></td>
+              <td class="py-3 px-4"><%= item.date_lost.toISOString().split('T')[0] %></td>
+              <td class="py-3 px-4 font-semibold <%= item.status === 'Returned' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' %>">
+                <%= item.status %>
+              </td>
+              <td class="py-3 px-4">
+                <div class="flex flex-wrap gap-2">
+                  <form method="POST" action="/admin/lost-items/toggle-returned/<%= item.id %>" onsubmit="return confirm('Are you sure you want to change the returned status of this item?');">
+                    <% if (item.status === 'Received') { %>
+                      <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
+                        Unmark as Returned
+                      </button>
+                    <% } else { %>
+                      <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
+                        Mark as Returned
+                      </button>
+                    <% } %>
+                  </form>
+                  <form action="/admin/lost-items/delete/<%= item.id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this item?')">
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Apply saved mode on page load
+    const savedMode = localStorage.getItem('mode');
+    if (savedMode === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+
+</body>
+</html>
